@@ -9,7 +9,7 @@ public class Utility {
 
     private static final String DEFAULT_ITEM_FOLDER_NAME = "Videos";
 
-    private static final String LOG_TAG = "Verbose";
+    private static final String LOG_TAG = "SyncAppLogger";
 
     /* Checks if external storage is available for read and write */
     public static boolean isExternalStorageWritable() {
