@@ -9,7 +9,12 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+
 import library.sharedpackage.manager.ItemManager;
+import library.sharedpackage.models.FileContent;
 import poliv.jr.com.syncapplication.manager.FileManager;
 import poliv.jr.com.syncapplication.utility.Utility;
 

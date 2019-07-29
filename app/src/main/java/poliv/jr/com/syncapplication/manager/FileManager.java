@@ -13,7 +13,7 @@ import poliv.jr.com.syncapplication.exceptions.FileManagerNotInitializedExceptio
 import library.sharedpackage.manager.ItemManager;
 import poliv.jr.com.syncapplication.utility.Utility;
 
-public class FileManager implements ItemManager, FileFilter {
+public class FileManager implements ItemManager, FileFilter { //todo:change receive and add file methods
 
     private static File folder;
 

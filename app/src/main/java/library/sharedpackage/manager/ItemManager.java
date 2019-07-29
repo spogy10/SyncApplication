@@ -4,7 +4,7 @@ import library.sharedpackage.models.FileContent;
 
 import java.util.List;
 
-public interface ItemManager {
+public interface ItemManager { //todo change the methods using filecontent
 
     boolean addItems(List<FileContent> files);
 
