@@ -1,5 +1,7 @@
 package poliv.jr.com.syncapplication.manager;
 
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -13,7 +15,7 @@ import poliv.jr.com.syncapplication.exceptions.FileManagerNotInitializedExceptio
 import library.sharedpackage.manager.ItemManager;
 import poliv.jr.com.syncapplication.utility.Utility;
 
-public class FileManager implements ItemManager, FileFilter { //todo:change receive and add file methods
+public class FileManager implements ItemManager, FileFilter {
 
     private static File folder;
 
@@ -41,22 +43,22 @@ public class FileManager implements ItemManager, FileFilter { //todo:change rece
         FILE_EXTENSIONS_LIST = new LinkedList<>(Arrays.asList(FILE_EXTENSIONS));
     }
 
-    @Override
-    public boolean addItems(List<FileContent> files) {
-        boolean success = true;
-
-        if(!Utility.isExternalStorageWritable()){
-            Utility.outputVerbose("Unable to add items because external storage is not writable");
-            return false;
-        }
-
-        for(FileContent file : files){
-            if(!createFile(file))
-                success = false;
-        }
-
-        return success;
-    }
+//    @Override
+//    public boolean addItems(List<FileContent> files) {
+//        boolean success = true;
+//
+//        if(!Utility.isExternalStorageWritable()){
+//            Utility.outputVerbose("Unable to add items because external storage is not writable");
+//            return false;
+//        }
+//
+//        for(FileContent file : files){
+//            if(!createFile(file))
+//                success = false;
+//        }
+//
+//        return success;
+//    }
 
     @Override
     public boolean removeItems(List<String> fileNames) {
@@ -135,25 +137,25 @@ public class FileManager implements ItemManager, FileFilter { //todo:change rece
         return (lastIndex > 0) ? fileName.substring(++lastIndex) : "";
     }
 
-    private boolean createFile(FileContent fileContent){
-        boolean success = false;
-
-        if(!Utility.isExternalStorageWritable()){
-            Utility.outputVerbose("Unable to create file "+ fileContent.getFileName() +" because external storage is not writable");
-            return false;
-        }
-
-        try {
-            Files.write(new File(folder, fileContent.getFileName()).toPath(), fileContent.getData());
-            success = true;
-        } catch (IOException e) {
-            e.printStackTrace();
-            Utility.outputError("Error unable to create file :"+fileContent.getFileName(), e);
-            success = false;
-        }
-
-        return success;
-    }
+//    private boolean createFile(FileContent fileContent){
+//        boolean success = false;
+//
+//        if(!Utility.isExternalStorageWritable()){
+//            Utility.outputVerbose("Unable to create file "+ fileContent.getFileName() +" because external storage is not writable");
+//            return false;
+//        }
+//
+//        try {
+//            Files.write(new File(folder, fileContent.getFileName()).toPath(), fileContent.getData());
+//            success = true;
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//            Utility.outputError("Error unable to create file :"+fileContent.getFileName(), e);
+//            success = false;
+//        }
+//
+//        return success;
+//    }
 
     private FileContent retrieveFile(String fileName){
         FileContent fileContent = null;
@@ -163,16 +165,12 @@ public class FileManager implements ItemManager, FileFilter { //todo:change rece
             return fileContent;
         }
 
-        try{
-            byte[] data = Files.readAllBytes(new File(folder, fileName).toPath());
-            fileContent = new FileContent(fileName, data);
-            Utility.outputVerbose("Retrieved file: "+fileName);
-        } catch (IOException e) {
-            e.printStackTrace();
-            Utility.outputError("error retrieving file", e);
-            fileContent = null;
+        File file = new File(folder, fileName);
+        if(file.isFile()){
+            fileContent = new FileContent(fileName, FileUtils.sizeOf(file));
+        }else{
+            Utility.outputVerbose("error retrieving file:" + fileName +  "does not exist");
         }
-
 
         return fileContent;
     }

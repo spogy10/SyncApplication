@@ -1,13 +1,15 @@
 package library.sharedpackage.models;
 
-public class FileContent {
+import java.io.Serializable;
+
+public class FileContent implements Serializable {
     private String fileName = "";
-    private byte[] data;
+    private long fileSize;
 
 
-    public FileContent(String fileName, byte[] data) {
+    public FileContent(String fileName, long fileSize) {
         this.fileName = fileName;
-        this.data = data;
+        this.fileSize = fileSize;
     }
 
 
@@ -19,11 +21,11 @@ public class FileContent {
         this.fileName = fileName;
     }
 
-    public byte[] getData() {
-        return data;
+    public long getFileSize() {
+        return fileSize;
     }
 
-    public void setData(byte[] data) {
-        this.data = data;
+    public void setFileSize(long fileSize) {
+        this.fileSize = fileSize;
     }
 }
