@@ -9,9 +9,16 @@ public enum DC {
     GET_ITEMS,
     SYNC_LISTS,
     SERVER_CONNECTION_ERROR,
+    REMOTE_SERVER_ERROR,
     NO_ERROR,
     GENERAL_ERROR,
     CONNECTION_NOT_SETUP,
-    DISCONNECT
+    DISCONNECT,
+    OK_TO_SEND_FILES,
+    CANCEL_OPERATION;
 
+
+    public static String toReadableString(DC dc){
+        return dc.toString().replace('_', ' ');
+    }
 }
