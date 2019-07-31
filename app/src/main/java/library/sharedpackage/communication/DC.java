@@ -2,23 +2,33 @@ package library.sharedpackage.communication;
 
 public enum DC {
 
-    NO_INFO,
-    GET_ITEM_LIST,
     ADD_ITEMS,
-    REMOVE_ITEMS,
-    GET_ITEMS,
-    SYNC_LISTS,
-    SERVER_CONNECTION_ERROR,
-    REMOTE_SERVER_ERROR,
-    NO_ERROR,
-    GENERAL_ERROR,
-    CONNECTION_NOT_SETUP,
+    CANCEL_OPERATION,
+    CONNECTION_NOT_SETUP(true),
     DISCONNECT,
+    GENERAL_ERROR(true),
+    GET_ITEMS,
+    GET_ITEM_LIST,
+    NO_ERROR,
+    NO_INFO,
     OK_TO_SEND_FILES,
-    CANCEL_OPERATION;
+    REMOTE_SERVER_ERROR(true),
+    REMOVE_ITEMS,
+    SERVER_CONNECTION_ERROR(true),
+    SYNC_LISTS;
+
+    public final boolean IsErrorCode;
+
+    DC() {
+        IsErrorCode = false;
+    }
+
+    DC(boolean IsErrorCode) {
+        this.IsErrorCode = IsErrorCode;
+    }
 
 
-    public static String toReadableString(DC dc){
-        return dc.toString().replace('_', ' ');
+    public String toReadableString() {
+        return this.toString().replace('_', ' ');
     }
 }
