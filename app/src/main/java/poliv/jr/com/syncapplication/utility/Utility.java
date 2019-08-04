@@ -50,9 +50,9 @@ public class Utility {
             }
 
             outputVerbose(response.getInfo().toReadableString());
+        }else{
+            outputVerbose("Response set as request");
         }
-
-        outputVerbose("Response set as request");
 
         return false;
     }
