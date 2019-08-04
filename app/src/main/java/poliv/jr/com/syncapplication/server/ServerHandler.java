@@ -3,12 +3,14 @@ package poliv.jr.com.syncapplication.server;
 import android.os.AsyncTask;
 
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import library.sharedpackage.communication.DC;
 import library.sharedpackage.communication.DataCarrier;
 import library.sharedpackage.manager.ItemManager;
+import library.sharedpackage.models.FileContent;
 import poliv.jr.com.syncapplication.utility.Utility;
 
 public class ServerHandler implements Runnable, RequestHandlerInterface {
@@ -119,25 +121,104 @@ public class ServerHandler implements Runnable, RequestHandlerInterface {
         return tempResponseHolder;
     }
 
-    private void caseStatements(DataCarrier carrier) { //todo: add wait() to DC.ADD_ITEMS and  GET_ITEMS
+    @Override
+    public void restartServer() {
+        server.restartServer();
+    }
+
+    private void caseStatements(DataCarrier carrier) {
         switch (carrier.getInfo()){
             case GET_ITEM_LIST:
+                getItemList(carrier);
                 break;
 
             case GET_ITEMS:
+                getItems(carrier);
                 break;
 
             case ADD_ITEMS:
+                addItems(carrier);
                 break;
 
             case REMOVE_ITEMS:
+                removeItems(carrier);
+                break;
+
+            case CANCEL_OPERATION:
                 break;
         }
     }
 
-    @Override
-    public void restartServer() {
-        server.restartServer();
+    private void getItems(DataCarrier carrier) {
+        LinkedList<String> fileNames = (LinkedList<String>) carrier.getData();
+
+        sendFiles(fileNames);
+    }
+
+    private void addItems(DataCarrier carrier) {
+        LinkedList<FileContent> files = (LinkedList<FileContent>) carrier.getData();
+
+        receiveFiles(files);
+    }
+
+    private void removeItems(DataCarrier carrier) {
+        LinkedList<String> fileNames = (LinkedList<String>) carrier.getData();
+
+        Boolean data = remoteManager.removeItems(fileNames);
+
+        DataCarrier<Boolean> response = new DataCarrier<>(DC.REMOVE_ITEMS, data, false);
+
+        sendRequestUsingAsyncTask(response, false);
+    }
+
+    private void getItemList(DataCarrier carrier) {
+        LinkedList<String> data = (LinkedList<String>) remoteManager.getItemsList();
+
+        DataCarrier response = new DataCarrier<>(DC.GET_ITEM_LIST, data, false);
+
+        sendRequestUsingAsyncTask(response, false);
+    }
+
+    private void sendFiles(LinkedList<String> fileNames) {
+        boolean success = true;
+
+        LinkedList<FileContent> files = (LinkedList<FileContent>) remoteManager.getItems(fileNames);
+        DataCarrier<LinkedList<FileContent>> initialResponse = new DataCarrier<>(DC.GET_ITEMS, files, false);
+        sendRequestUsingAsyncTask(initialResponse, false);
+
+        Utility.outputVerbose("FileContents list sent, ready to send files");
+
+        for(FileContent fileContent : files){
+            Utility.outputVerbose("Attempting to send "+fileContent.getFileName());
+            DataCarrier<FileContent> sendFile = new DataCarrier<>(DC.GET_ITEMS, fileContent, false);
+            boolean currentSuccess = server.sendFile(sendFile);
+            Utility.outputVerbose("Sending "+fileContent.getFileName()+": "+currentSuccess);
+
+            success = currentSuccess && success;
+        }
+
+        Utility.outputVerbose("Finished sending files: "+success);
+
+    }
+
+    private void receiveFiles(LinkedList<FileContent> files) {
+        boolean success = true;
+
+        DataCarrier initialResponse = new DataCarrier(DC.OK_TO_SEND_FILES, false);
+        sendRequestUsingAsyncTask(initialResponse, false);
+
+        Utility.outputVerbose("Ok to send files sent, prepared to receive files");
+
+        for(FileContent fileContent : files){
+            Utility.outputVerbose("Attempting to receive "+fileContent.getFileName());
+            DataCarrier<FileContent> receiveFile = new DataCarrier<>(DC.ADD_ITEMS, fileContent, true);
+            boolean currentSuccess = server.receiveFile(receiveFile);
+
+            Utility.outputVerbose("Receiving "+fileContent.getFileName()+": "+currentSuccess);
+            success = currentSuccess && success;
+        }
+
+        Utility.outputVerbose("Finished receiving files: "+success);
     }
 
 

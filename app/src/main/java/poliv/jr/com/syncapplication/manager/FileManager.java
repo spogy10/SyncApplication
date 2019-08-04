@@ -47,23 +47,6 @@ public class FileManager implements ClientRemoteItemManager, FileFilter {
         requestHandlerInterface = ServerHandler.getInstance(this);
     }
 
-//    @Override
-//    public boolean addItems(List<FileContent> files) {
-//        boolean success = true;
-//
-//        if(!Utility.isExternalStorageWritable()){
-//            Utility.outputVerbose("Unable to add items because external storage is not writable");
-//            return false;
-//        }
-//
-//        for(FileContent file : files){
-//            if(!createFile(file))
-//                success = false;
-//        }
-//
-//        return success;
-//    }
-
     public void setRequestSenderInterface(RequestHandlerInterface requestHandlerInterface) {
         this.requestHandlerInterface = requestHandlerInterface;
     }
@@ -144,26 +127,6 @@ public class FileManager implements ClientRemoteItemManager, FileFilter {
 
         return (lastIndex > 0) ? fileName.substring(++lastIndex) : "";
     }
-
-//    private boolean createFile(FileContent fileContent){
-//        boolean success = false;
-//
-//        if(!Utility.isExternalStorageWritable()){
-//            Utility.outputVerbose("Unable to create file "+ fileContent.getFileName() +" because external storage is not writable");
-//            return false;
-//        }
-//
-//        try {
-//            Files.write(new File(folder, fileContent.getFileName()).toPath(), fileContent.getData());
-//            success = true;
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//            Utility.outputError("Error unable to create file :"+fileContent.getFileName(), e);
-//            success = false;
-//        }
-//
-//        return success;
-//    }
 
     private FileContent retrieveFile(String fileName){
         FileContent fileContent = null;
