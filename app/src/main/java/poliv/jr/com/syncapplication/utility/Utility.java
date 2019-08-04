@@ -5,6 +5,8 @@ import android.util.Log;
 
 import java.io.File;
 
+import library.sharedpackage.communication.DataCarrier;
+
 public class Utility {
 
     private static final String DEFAULT_ITEM_FOLDER_NAME = "Videos" + File.separator + "test";
@@ -38,6 +40,21 @@ public class Utility {
 
     public static int getPORT() {
         return PORT;
+    }
+
+    public static boolean responseCheck(DataCarrier response) {
+        if(!response.isRequest()) {
+            if (!response.getInfo().IsErrorCode) {
+                outputVerbose("No Error Code");
+                return true;
+            }
+
+            outputVerbose(response.getInfo().toReadableString());
+        }
+
+        outputVerbose("Response set as request");
+
+        return false;
     }
 
     public static void outputVerbose(String message){

@@ -12,12 +12,15 @@ import java.util.List;
 
 import library.sharedpackage.models.FileContent;
 import poliv.jr.com.syncapplication.exceptions.FileManagerNotInitializedException;
-import library.sharedpackage.manager.ItemManager;
+import poliv.jr.com.syncapplication.server.RequestHandlerInterface;
+import poliv.jr.com.syncapplication.server.ServerHandler;
 import poliv.jr.com.syncapplication.utility.Utility;
 
-public class FileManager implements ItemManager, FileFilter {
+public class FileManager implements ClientRemoteItemManager, FileFilter {
 
     private static File folder;
+
+    private RequestHandlerInterface requestHandlerInterface;
 
     private static final String[] FILE_EXTENSIONS = new String[]{"mp4", "mkv", "flv"};
 
@@ -41,6 +44,7 @@ public class FileManager implements ItemManager, FileFilter {
     private FileManager(String folderPath){
         folder = new File(folderPath);
         FILE_EXTENSIONS_LIST = new LinkedList<>(Arrays.asList(FILE_EXTENSIONS));
+        requestHandlerInterface = ServerHandler.getInstance(this);
     }
 
 //    @Override
@@ -59,6 +63,10 @@ public class FileManager implements ItemManager, FileFilter {
 //
 //        return success;
 //    }
+
+    public void setRequestSenderInterface(RequestHandlerInterface requestHandlerInterface) {
+        this.requestHandlerInterface = requestHandlerInterface;
+    }
 
     @Override
     public boolean removeItems(List<String> fileNames) {
@@ -173,5 +181,10 @@ public class FileManager implements ItemManager, FileFilter {
         }
 
         return fileContent;
+    }
+
+    @Override
+    public void restartServer() {
+        requestHandlerInterface.restartServer();
     }
 }

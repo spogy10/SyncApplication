@@ -18,7 +18,7 @@ import library.sharedpackage.models.FileContent;
 import poliv.jr.com.syncapplication.manager.FileManager;
 import poliv.jr.com.syncapplication.utility.Utility;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity { //todo: include refresh server button
     private static final int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 5;
     private static ItemManager fileManager;
 
