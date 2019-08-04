@@ -92,11 +92,6 @@ public class Server implements Runnable {
         setUpConnection();
     }
 
-    synchronized void resumeThread(){ //todo: correct this implementation
-        t.notify();
-    }
-
-
     private boolean initStreams() {
         try{
             if(connection == null)

@@ -28,4 +28,12 @@ public class FileContent implements Serializable {
     public void setFileSize(long fileSize) {
         this.fileSize = fileSize;
     }
+
+    @Override
+    public String toString() {
+        return "FileContent{ " +
+                "fileName = '" + fileName + '\'' +
+                ", fileSize = " + fileSize/(1024*1024) +
+                "MB }";
+    }
 }
