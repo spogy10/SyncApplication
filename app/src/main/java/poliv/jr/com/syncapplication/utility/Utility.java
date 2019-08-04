@@ -11,6 +11,9 @@ public class Utility {
 
     private static final String LOG_TAG = "SyncAppLogger";
 
+    private static final String HOST = "";
+    private static final int PORT = 0;
+
     /* Checks if external storage is available for read and write */
     public static boolean isExternalStorageWritable() {
         String state = Environment.getExternalStorageState();
@@ -27,6 +30,14 @@ public class Utility {
 
     public static String getFolderPath(){
         return Environment.getExternalStoragePublicDirectory("") + File.separator + DEFAULT_ITEM_FOLDER_NAME;
+    }
+
+    public static String getHOST() {
+        return HOST;
+    }
+
+    public static int getPORT() {
+        return PORT;
     }
 
     public static void outputVerbose(String message){
