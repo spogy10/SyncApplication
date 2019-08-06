@@ -6,6 +6,8 @@ public class FileContent implements Serializable {
     private String fileName = "";
     private long fileSize;
 
+    public static final int ONE_KB = 1024;
+
 
     public FileContent(String fileName, long fileSize) {
         this.fileName = fileName;
@@ -33,7 +35,7 @@ public class FileContent implements Serializable {
     public String toString() {
         return "FileContent{ " +
                 "fileName = '" + fileName + '\'' +
-                ", fileSize = " + fileSize/(1024*1024) +
+                ", fileSize = " + fileSize/(ONE_KB*ONE_KB) +
                 "MB }";
     }
 }

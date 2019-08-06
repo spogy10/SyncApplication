@@ -74,7 +74,7 @@ public class ServerHandler implements Runnable, RequestHandlerInterface {
             Utility.outputError("Error occurred in ServerHandler run method", e);
         } finally {
             server.endServer();
-            server.restartServer();
+            restartServer();
         }
     }
 
@@ -146,11 +146,20 @@ public class ServerHandler implements Runnable, RequestHandlerInterface {
                 break;
 
             case CANCEL_OPERATION:
+                cancelOperation(carrier);
                 break;
 
             case FINISHED_SENDING_FILES:
+                finishedSendingFiles(carrier);
                 break;
         }
+    }
+
+    private void finishedSendingFiles(DataCarrier carrier) {
+
+    }
+
+    private void cancelOperation(DataCarrier carrier) {
     }
 
     private void getItems(DataCarrier carrier) {
