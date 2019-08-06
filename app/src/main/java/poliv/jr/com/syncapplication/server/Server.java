@@ -132,8 +132,7 @@ public class Server implements Runnable {
             notifyResponseSent(dc.getInfo().toString());
     }
 
-    public boolean sendFile(DataCarrier<FileContent> dc){ //todo: create these methods
-        //todo https://stackoverflow.com/questions/10367698/java-multiple-file-transfer-over-socket?answertab=votes#tab-top
+    public boolean sendFile(DataCarrier<FileContent> dc){ //todo: create these methods todo https://stackoverflow.com/questions/10367698/java-multiple-file-transfer-over-socket?answertab=votes#tab-top
         boolean success = false;
 
         if(dc.isRequest())
@@ -208,6 +207,7 @@ public class Server implements Runnable {
             while ( (fileSize > 0) && (IOUtils.EOF != (n = is.read(buffer, 0, (int)Math.min(buffer.length, fileSize)))) ) { //checks if fileSize is 0 or if EOF sent
                 fos.write(buffer, 0, n);
                 fileSize -= n;
+                Utility.outputVerbose("fileSize: "+fileSize+"\nn: "+ n);
             }
 
             success = true;
@@ -226,7 +226,7 @@ public class Server implements Runnable {
                     fos.close();
                 } catch (IOException e) {
                     e.printStackTrace();
-                    Utility.outputError("Error closing out stream of receive file method", e);
+                    Utility.outputError("Error closing out stream of receive file method", e); //todo: change to ui element
                     success = false;
                 }
             }
@@ -258,14 +258,21 @@ public class Server implements Runnable {
 
     private void closeConnection(){
         try {
-            os.close();
-            is.close();
-            connection.close();
+            if(os != null)
+                os.close();
+            if(is != null)
+                is.close();
+            if(connection != null)
+                connection.close();
             Utility.outputVerbose("Server connections closed");
         } catch (IOException e) {
             e.printStackTrace();
             Utility.outputError("Error closing connections", e);
         }
+
+        os = null;
+        is = null;
+        connection = null;
     }
 
     public boolean areStreamsInitialized(){
