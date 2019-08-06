@@ -15,18 +15,18 @@ public class DataCarrier <T extends Serializable> implements Serializable {
     }
 
     public DataCarrier(boolean request){
-        this(DC.NO_INFO, null, request);
+        this(request, DC.NO_INFO);
     }
 
-    public DataCarrier(DC info, boolean request){
-        this(info, null, request);
+    public DataCarrier(boolean request, DC info){
+        this(request, info, null);
     }
 
-    public DataCarrier(T data, boolean request){
-        this(DC.NO_INFO, data, request);
+    public DataCarrier(boolean request, T data){
+        this(request, DC.NO_INFO, data);
     }
 
-    public DataCarrier(DC info, T data, boolean request){
+    public DataCarrier(boolean request, DC info, T data){
         this.info = info;
         this.data = data;
         this.request = request;

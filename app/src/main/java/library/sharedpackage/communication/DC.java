@@ -15,7 +15,8 @@ public enum DC {
     REMOTE_SERVER_ERROR(true),
     REMOVE_ITEMS,
     SERVER_CONNECTION_ERROR(true),
-    SYNC_LISTS;
+    SYNC_LISTS,
+    FINISHED_SENDING_FILES;
 
     public final boolean IsErrorCode;
 

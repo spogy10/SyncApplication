@@ -82,10 +82,10 @@ public class ServerHandler implements Runnable, RequestHandlerInterface {
         if(server.isServerOff() || !server.areStreamsInitialized()){
             String header = request.isRequest()? "Request:" : "Response:";
             Utility.outputVerbose(header + " " + request.getInfo() + " failed to send because connection not setup");
-            return new DataCarrier(DC.CONNECTION_NOT_SETUP, false);
+            return new DataCarrier(false, DC.CONNECTION_NOT_SETUP);
         }
 
-        DataCarrier response = new DataCarrier(DC.SERVER_CONNECTION_ERROR, false);
+        DataCarrier response = new DataCarrier(false, DC.SERVER_CONNECTION_ERROR);
         try{
             server.sendObject(request);
 
@@ -101,7 +101,7 @@ public class ServerHandler implements Runnable, RequestHandlerInterface {
     }
 
     private DataCarrier sendRequestUsingAsyncTask(DataCarrier request, boolean responseRequired){
-        DataCarrier response = new DataCarrier(DC.GENERAL_ERROR, false);
+        DataCarrier response = new DataCarrier(false, DC.GENERAL_ERROR);
         try {
             response = new RequestAsyncTask().execute(request, responseRequired).get();
         } catch (InterruptedException e) {
@@ -147,6 +147,9 @@ public class ServerHandler implements Runnable, RequestHandlerInterface {
 
             case CANCEL_OPERATION:
                 break;
+
+            case FINISHED_SENDING_FILES:
+                break;
         }
     }
 
@@ -167,7 +170,7 @@ public class ServerHandler implements Runnable, RequestHandlerInterface {
 
         Boolean data = remoteManager.removeItems(fileNames);
 
-        DataCarrier<Boolean> response = new DataCarrier<>(DC.REMOVE_ITEMS, data, false);
+        DataCarrier<Boolean> response = new DataCarrier<>(false, DC.REMOVE_ITEMS, data);
 
         sendRequestUsingAsyncTask(response, false);
     }
@@ -175,7 +178,7 @@ public class ServerHandler implements Runnable, RequestHandlerInterface {
     private void getItemList(DataCarrier carrier) {
         LinkedList<String> data = (LinkedList<String>) remoteManager.getItemsList();
 
-        DataCarrier response = new DataCarrier<>(DC.GET_ITEM_LIST, data, false);
+        DataCarrier response = new DataCarrier<>(false, DC.GET_ITEM_LIST, data);
 
         sendRequestUsingAsyncTask(response, false);
     }
@@ -184,14 +187,14 @@ public class ServerHandler implements Runnable, RequestHandlerInterface {
         boolean success = true;
 
         LinkedList<FileContent> files = (LinkedList<FileContent>) remoteManager.getItems(fileNames);
-        DataCarrier<LinkedList<FileContent>> initialResponse = new DataCarrier<>(DC.GET_ITEMS, files, false);
+        DataCarrier<LinkedList<FileContent>> initialResponse = new DataCarrier<>(false, DC.GET_ITEMS, files);
         sendRequestUsingAsyncTask(initialResponse, false);
 
         Utility.outputVerbose("FileContents list sent, ready to send files");
 
         for(FileContent fileContent : files){
             Utility.outputVerbose("Attempting to send "+fileContent.getFileName());
-            DataCarrier<FileContent> sendFile = new DataCarrier<>(DC.GET_ITEMS, fileContent, false);
+            DataCarrier<FileContent> sendFile = new DataCarrier<>(false, DC.GET_ITEMS, fileContent);
             boolean currentSuccess = server.sendFile(sendFile);
             Utility.outputVerbose("Sending "+fileContent.getFileName()+": "+currentSuccess);
 
@@ -205,14 +208,14 @@ public class ServerHandler implements Runnable, RequestHandlerInterface {
     private void receiveFiles(LinkedList<FileContent> files) {
         boolean success = true;
 
-        DataCarrier initialResponse = new DataCarrier(DC.OK_TO_SEND_FILES, false);
+        DataCarrier initialResponse = new DataCarrier(false, DC.OK_TO_SEND_FILES);
         sendRequestUsingAsyncTask(initialResponse, false);
 
         Utility.outputVerbose("Ok to send files sent, prepared to receive files");
 
         for(FileContent fileContent : files){
             Utility.outputVerbose("Attempting to receive "+fileContent.getFileName());
-            DataCarrier<FileContent> receiveFile = new DataCarrier<>(DC.ADD_ITEMS, fileContent, true);
+            DataCarrier<FileContent> receiveFile = new DataCarrier<>(true, DC.ADD_ITEMS, fileContent);
             boolean currentSuccess = server.receiveFile(receiveFile);
 
             Utility.outputVerbose("Receiving "+fileContent.getFileName()+": "+currentSuccess);
