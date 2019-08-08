@@ -210,6 +210,9 @@ public class ServerHandler implements Runnable, RequestHandlerInterface {
             success = currentSuccess && success;
         }
 
+        DataCarrier finishedResponse = new DataCarrier(true, DC.FINISHED_SENDING_FILES);
+        sendRequest(finishedResponse, false);
+
         Utility.outputVerbose("Finished sending files: "+success);
 
     }
