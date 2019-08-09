@@ -152,6 +152,9 @@ public class ServerHandler implements Runnable, RequestHandlerInterface {
             case FINISHED_SENDING_FILES:
                 finishedSendingFiles(carrier);
                 break;
+
+            case CONNECTION_SETUP:
+                connectionSetup(carrier);
         }
     }
 
@@ -235,6 +238,18 @@ public class ServerHandler implements Runnable, RequestHandlerInterface {
         }
 
         Utility.outputVerbose("Finished receiving files: "+success);
+    }
+
+    private void connectionSetup(DataCarrier carrier) {
+        DataCarrier<Boolean> response = new DataCarrier<>(false, DC.CONNECTION_SETUP,true);
+
+        sendRequest(response, false);
+    }
+
+    public DataCarrier testConnection() {
+        DataCarrier request = new DataCarrier(true, DC.CONNECTION_SETUP);
+
+        return sendRequest(request, true);
     }
 
 

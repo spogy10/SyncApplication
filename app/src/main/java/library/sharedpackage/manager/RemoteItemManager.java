@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface RemoteItemManager extends ItemManager {
     boolean addItems(List<FileContent> files);
+
+    boolean isRequestSenderSetup();
 }

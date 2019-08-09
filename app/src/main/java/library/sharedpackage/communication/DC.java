@@ -16,7 +16,8 @@ public enum DC {
     REMOVE_ITEMS,
     SERVER_CONNECTION_ERROR(true),
     SYNC_LISTS,
-    FINISHED_SENDING_FILES;
+    FINISHED_SENDING_FILES,
+    CONNECTION_SETUP;
 
     public final boolean IsErrorCode;
 
