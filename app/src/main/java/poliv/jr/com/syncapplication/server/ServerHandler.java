@@ -72,6 +72,9 @@ public class ServerHandler implements Runnable, RequestHandlerInterface {
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
             Utility.outputError("Error occurred in ServerHandler run method", e);
+        } catch (Exception e){
+            e.printStackTrace();
+            Utility.outputError("Error occurred in ServerHandler run method", e);
         } finally {
             server.endServer();
             restartServer();

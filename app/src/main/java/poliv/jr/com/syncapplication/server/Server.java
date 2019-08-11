@@ -207,7 +207,7 @@ public class Server implements Runnable {
             while ( (fileSize > 0) && (IOUtils.EOF != (n = is.read(buffer, 0, (int)Math.min(buffer.length, fileSize)))) ) { //checks if fileSize is 0 or if EOF sent
                 fos.write(buffer, 0, n);
                 fileSize -= n;
-                Utility.outputVerbose("fileSize: "+fileSize+"\nn: "+ n);
+                //Utility.outputVerbose("fileSize: "+fileSize+"\nn: "+ n);
             }
 
             success = true;
