@@ -9,16 +9,11 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-
 import library.sharedpackage.manager.ItemManager;
-import library.sharedpackage.models.FileContent;
 import poliv.jr.com.syncapplication.manager.FileManager;
 import poliv.jr.com.syncapplication.utility.Utility;
 
-public class MainActivity extends AppCompatActivity { //todo: include refresh server button
+public class MainActivity extends AppCompatActivity { //todo: include refresh server button, allow user to change server ip address
     private static final int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 5;
     private static ItemManager fileManager;
 
