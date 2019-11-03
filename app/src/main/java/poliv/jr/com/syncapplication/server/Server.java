@@ -51,17 +51,11 @@ public class Server implements Runnable {
     }
 
 
-    boolean isServerOff(){
-        return serverOff;
+    //region THREAD STUFF
+    @Override
+    public void run() {
+        waitForRequests();
     }
-
-    private void setUpConnection() {
-        t = new Thread(this);
-        t.start();
-    }
-
-
-
 
     private void waitForRequests() {
         Utility.outputVerbose("Waiting for connection");
@@ -85,11 +79,32 @@ public class Server implements Runnable {
             Utility.outputError("Error starting server", e);
         }
     }
+    //endregion
+
+
+
+    //region SERVER MANAGEMENT
 
     void restartServer(){
         Utility.outputVerbose("Restarting Server");
         endServer();
         setUpConnection();
+    }
+
+    boolean isServerOff(){
+        return serverOff;
+    }
+
+    void endServer(){
+        closeConnection();
+        Utility.outputVerbose("Server ended");
+
+        serverOff = true;
+    }
+
+    private void setUpConnection() {
+        t = new Thread(this);
+        t.start();
     }
 
     private boolean initStreams() {
@@ -108,6 +123,33 @@ public class Server implements Runnable {
         return false;
     }
 
+    private void closeConnection(){
+        try {
+            if(os != null)
+                os.close();
+            if(is != null)
+                is.close();
+            if(connection != null)
+                connection.close();
+            Utility.outputVerbose("Server connections closed");
+        } catch (IOException e) {
+            e.printStackTrace();
+            Utility.outputError("Error closing connections", e);
+        }
+
+        os = null;
+        is = null;
+        connection = null;
+    }
+
+    public boolean areStreamsInitialized(){
+        return connection != null && os != null && is != null;
+    }
+    //endregion
+
+
+
+    //region NOTIFICATIONS
     private void notifyRequestSent(String request) {
         Utility.outputVerbose("Request: "+request+" sent");
     }
@@ -123,6 +165,12 @@ public class Server implements Runnable {
     private void notifyResponseReceived(String response){
         Utility.outputVerbose("Response "+response+" received");
     }
+    //endregion
+
+
+
+
+    //region DATA TRANSFER
 
     void sendObject(DataCarrier dc) throws IOException {
         os.writeObject(dc);
@@ -255,40 +303,6 @@ public class Server implements Runnable {
             notifyResponseReceived(dc.getInfo().toString());
         return dc;
     }
+    //endregion
 
-    private void closeConnection(){
-        try {
-            if(os != null)
-                os.close();
-            if(is != null)
-                is.close();
-            if(connection != null)
-                connection.close();
-            Utility.outputVerbose("Server connections closed");
-        } catch (IOException e) {
-            e.printStackTrace();
-            Utility.outputError("Error closing connections", e);
-        }
-
-        os = null;
-        is = null;
-        connection = null;
-    }
-
-    public boolean areStreamsInitialized(){
-        return connection != null && os != null && is != null;
-    }
-
-    void endServer(){
-        closeConnection();
-        Utility.outputVerbose("Server ended");
-
-        serverOff = true;
-    }
-
-
-    @Override
-    public void run() {
-        waitForRequests();
-    }
 }

@@ -22,10 +22,10 @@ public class ServerHandler implements Runnable, RequestHandlerInterface {
     private ItemManager remoteManager;
 
     private AtomicBoolean unreadResponse = new AtomicBoolean(false);
+    private AtomicBoolean stopServer = new AtomicBoolean(false);
     private DataCarrier tempResponseHolder;
 
     private static ServerHandler ourInstance = null;
-
 
     public static ServerHandler getInstance(ItemManager remoteManager){
         ourInstance = new ServerHandler(remoteManager);
@@ -45,13 +45,15 @@ public class ServerHandler implements Runnable, RequestHandlerInterface {
         server = Server.getInstance(this);
     }
 
+
+
     @Override
     public void run() {
         Utility.outputVerbose("ServerHandler thread started");
 
         DC action = DC.NO_INFO;
         try{
-            while (!action.equals(DC.DISCONNECT)){
+            while (!action.equals(DC.DISCONNECT) && !stopServer.get()){
                 DataCarrier carrier = server.receiveObject();
                 if(carrier.isRequest()){
                     action = carrier.getInfo();
@@ -77,59 +79,33 @@ public class ServerHandler implements Runnable, RequestHandlerInterface {
             Utility.outputError("Error occurred in ServerHandler run method", e);
         } finally {
             server.endServer();
-            restartServer();
+            if(!stopServer.get())
+                restartServer();
         }
     }
 
-    private DataCarrier sendRequest(DataCarrier request, boolean responseRequired){
-        if(server.isServerOff() || !server.areStreamsInitialized()){
-            String header = request.isRequest()? "Request:" : "Response:";
-            Utility.outputVerbose(header + " " + request.getInfo() + " failed to send because connection not setup");
-            return new DataCarrier(false, DC.CONNECTION_NOT_SETUP);
-        }
 
-        DataCarrier response = new DataCarrier(false, DC.SERVER_CONNECTION_ERROR);
-        try{
-            server.sendObject(request);
 
-            if(responseRequired) {
-                response = waitForResponse();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            Utility.outputError("Error sending request", e);
-        }
-
-        return response;
-    }
-
-    private DataCarrier sendRequestUsingAsyncTask(DataCarrier request, boolean responseRequired){
-        DataCarrier response = new DataCarrier(false, DC.GENERAL_ERROR);
-        try {
-            response = new RequestAsyncTask().execute(request, responseRequired).get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-
-        return response;
-    }
-
-    private DataCarrier waitForResponse() {
-        while(!unreadResponse.get()){
-            /*wait until response comes in*/
-        }
-
-        unreadResponse.compareAndSet(true, false);
-        return tempResponseHolder;
-    }
+    //region SERVER MANAGEMENT
 
     @Override
     public void restartServer() {
         server.restartServer();
     }
 
+    @Override
+    public void stopServer() {
+        DataCarrier dc = new DataCarrier(true, DC.DISCONNECT);
+
+        sendRequestUsingAsyncTask(dc, false);
+
+        stopServer.compareAndSet(false, true);
+    }
+    //endregion
+
+
+
+    //region REQUEST AND RESPONSE METHODS
     private void caseStatements(DataCarrier carrier) {
         switch (carrier.getInfo()){
             case GET_ITEM_LIST:
@@ -254,7 +230,56 @@ public class ServerHandler implements Runnable, RequestHandlerInterface {
 
         return sendRequest(request, true);
     }
+    //endregion
 
+
+
+
+    //region REQUEST AND RESPONSE UTILITY METHODS
+
+    private DataCarrier sendRequest(DataCarrier request, boolean responseRequired){
+        if(server.isServerOff() || !server.areStreamsInitialized()){
+            String header = request.isRequest()? "Request:" : "Response:";
+            Utility.outputVerbose(header + " " + request.getInfo() + " failed to send because connection not setup");
+            return new DataCarrier(false, DC.CONNECTION_NOT_SETUP);
+        }
+
+        DataCarrier response = new DataCarrier(false, DC.SERVER_CONNECTION_ERROR);
+        try{
+            server.sendObject(request);
+
+            if(responseRequired) {
+                response = waitForResponse();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            Utility.outputError("Error sending request", e);
+        }
+
+        return response;
+    }
+
+    private DataCarrier sendRequestUsingAsyncTask(DataCarrier request, boolean responseRequired){
+        DataCarrier response = new DataCarrier(false, DC.GENERAL_ERROR);
+        try {
+            response = new RequestAsyncTask().execute(request, responseRequired).get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
+        return response;
+    }
+
+    private DataCarrier waitForResponse() {
+        while(!unreadResponse.get()){
+            /*wait until response comes in*/
+        }
+
+        unreadResponse.compareAndSet(true, false);
+        return tempResponseHolder;
+    }
 
     private class RequestAsyncTask extends AsyncTask<Object, Void, DataCarrier> {
 
@@ -264,4 +289,5 @@ public class ServerHandler implements Runnable, RequestHandlerInterface {
             return sendRequest((DataCarrier) requests[0], (boolean) requests[1]);
         }
     }
+    //endregion
 }

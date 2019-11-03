@@ -4,4 +4,6 @@ import library.sharedpackage.manager.ItemManager;
 
 public interface ClientRemoteItemManager extends ItemManager {
     void restartServer();
+
+    void stopServer();
 }

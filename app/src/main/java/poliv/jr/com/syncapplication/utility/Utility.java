@@ -13,7 +13,7 @@ public class Utility {
 
     private static final String LOG_TAG = "SyncAppLogger";
 
-    private static final String HOST = "192.168.100.68";
+    private static String HOST = "192.168.100.67";
     private static final int PORT = 4000;
 
     /* Checks if external storage is available for read and write */
@@ -36,6 +36,10 @@ public class Utility {
 
     public static String getHOST() {
         return HOST;
+    }
+
+    public static void setHost(String host){
+        HOST = host;
     }
 
     public static int getPORT() {

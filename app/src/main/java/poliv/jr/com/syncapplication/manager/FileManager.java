@@ -150,4 +150,11 @@ public class FileManager implements ClientRemoteItemManager, FileFilter {
     public void restartServer() {
         requestHandlerInterface.restartServer();
     }
+
+    @Override
+    public void stopServer() {
+        requestHandlerInterface.stopServer();
+    }
+
+
 }

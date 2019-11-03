@@ -8,25 +8,67 @@ import androidx.core.content.ContextCompat;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 
-import library.sharedpackage.manager.ItemManager;
+import poliv.jr.com.syncapplication.manager.ClientRemoteItemManager;
 import poliv.jr.com.syncapplication.manager.FileManager;
 import poliv.jr.com.syncapplication.utility.Utility;
 
-public class MainActivity extends AppCompatActivity { //todo: include refresh server button, allow user to change server ip address
+
+
+public class MainActivity extends AppCompatActivity {
     private static final int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 5;
-    private static ItemManager fileManager;
+    private static ClientRemoteItemManager fileManager;
+
+    private EditText etIpAddress;
+
+    private Button btStartServer, btStopServer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         onStartUp();
+
+        etIpAddress = findViewById(R.id.ipAddress);
+
+        etIpAddress.setText(Utility.getHOST());
+
+        btStartServer = findViewById(R.id.startServer);
+
+        btStopServer = findViewById(R.id.stopServer);
+
+        btStartServer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startServer(etIpAddress.getText().toString());
+            }
+        });
+
+        btStopServer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                stopServer();
+            }
+        });
     }
 
     private void onStartUp(){
         checkForWritePermission();
+        //fileManager = FileManager.getInstance(Utility.getFolderPath());
+    }
+
+    private void startServer(String host){
+        Utility.setHost(host);
         fileManager = FileManager.getInstance(Utility.getFolderPath());
+    }
+
+    private void stopServer(){
+        if(fileManager != null)
+            fileManager.stopServer();
     }
 
     private void checkForWritePermission(){
