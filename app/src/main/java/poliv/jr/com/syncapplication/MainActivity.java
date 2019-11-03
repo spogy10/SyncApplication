@@ -58,7 +58,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void onStartUp(){
         checkForWritePermission();
-        //fileManager = FileManager.getInstance(Utility.getFolderPath());
     }
 
     private void startServer(String host){
