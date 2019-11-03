@@ -16,7 +16,7 @@ import poliv.jr.com.syncapplication.manager.ClientRemoteItemManager;
 import poliv.jr.com.syncapplication.manager.FileManager;
 import poliv.jr.com.syncapplication.utility.Utility;
 
-
+//todo: create notifications
 
 public class MainActivity extends AppCompatActivity {
     private static final int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 5;
