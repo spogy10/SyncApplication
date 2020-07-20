@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Main-Class: main.Main
+Class-Path: apiguardian-api-1.0.0.jar commons-io-2.6.jar jackson-annotat
+ ions-2.11.0.rc1.jar jackson-core-2.11.0.rc1.jar jackson-databind-2.11.0
+ .rc1.jar jsr305-3.0.2.jar junit-jupiter-api-5.4.2.jar junit-jupiter-eng
+ ine-5.4.2.jar junit-jupiter-params-5.4.2.jar junit-platform-commons-1.4
+ .2.jar junit-platform-engine-1.4.2.jar log4j-api-2.13.1.jar log4j-core-
+ 2.13.1.jar opentest4j-1.1.1.jar JavaFXHelper11.jar jackson-annotations-
+ 2.11.0.rc1.jar jackson-core-2.11.0.rc1.jar jackson-databind-2.11.0.rc1.
+ jar log4j-api-2.13.1.jar log4j-core-2.13.1.jar apiguardian-api-1.0.0.ja
+ r commons-io-2.6.jar jackson-annotations-2.11.0.rc1.jar jackson-core-2.
+ 11.0.rc1.jar jackson-databind-2.11.0.rc1.jar jsr305-3.0.2.jar junit-jup
+ iter-api-5.4.2.jar junit-jupiter-engine-5.4.2.jar junit-jupiter-params-
+ 5.4.2.jar junit-platform-commons-1.4.2.jar junit-platform-engine-1.4.2.
+ jar log4j-api-2.13.1.jar log4j-core-2.13.1.jar opentest4j-1.1.1.jar Jav
+ aFXHelper11.jar
+
