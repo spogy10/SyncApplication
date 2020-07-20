@@ -17,6 +17,8 @@ import poliv.jr.com.syncapplication.manager.FileManager;
 import poliv.jr.com.syncapplication.utility.Utility;
 
 //todo: create notifications
+//todo: for background services that probably won't close connection on sleep https://developer.android.com/guide/components/services
+
 
 public class MainActivity extends AppCompatActivity {
     private static final int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 5;
