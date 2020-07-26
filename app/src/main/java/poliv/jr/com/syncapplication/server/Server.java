@@ -1,5 +1,7 @@
 package poliv.jr.com.syncapplication.server;
 
+import androidx.annotation.Nullable;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
@@ -8,8 +10,10 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 
 import library.sharedpackage.communication.DataCarrier;
@@ -180,7 +184,7 @@ public class Server implements Runnable {
             notifyResponseSent(dc.getInfo().toString());
     }
 
-    public boolean sendFile(DataCarrier<FileContent> dc){ //todo: create these methods todo https://stackoverflow.com/questions/10367698/java-multiple-file-transfer-over-socket?answertab=votes#tab-top
+    public boolean sendFile(DataCarrier<FileContent> dc, @Nullable Double loadingProperty){ //todo: create these methods todo https://stackoverflow.com/questions/10367698/java-multiple-file-transfer-over-socket?answertab=votes#tab-top
         boolean success = false;
 
         if(dc.isRequest())
@@ -194,10 +198,12 @@ public class Server implements Runnable {
             String folderPath = Utility.getFolderPath();
             File file = new File(folderPath, fileContent.getFileName());
             fis = new FileInputStream(file);
-            if(FileUtils.sizeOf(file) < (FileUtils.ONE_GB * 2))
-                IOUtils.copy(fis, os);
+
+            if(loadingProperty == null)
+                sendFileStream(fileContent.getFileSize(), fis);
             else
-                IOUtils.copyLarge(fis, os);
+                sendFileStream(fileContent.getFileSize(), fis, loadingProperty);
+
             success = true;
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -206,6 +212,9 @@ public class Server implements Runnable {
             e.printStackTrace();
             Utility.outputError("Error sending file", e);
         } finally {
+            if(loadingProperty != null){
+                loadingProperty = (double) 0;
+            }
             if(fis == null){
                 success = false;
             }else{
@@ -234,7 +243,17 @@ public class Server implements Runnable {
         return false;
     }
 
-    public boolean receiveFile(DataCarrier<FileContent> dc) {
+    private void sendFileStream(final long totalFileSize, final FileInputStream fis) throws IOException {
+        Utility.outputVerbose("In sendFileStream no updates method");
+        transferStreamData(fis, os, totalFileSize);
+    }
+
+    private void sendFileStream(final long totalFileSize, final FileInputStream fis, Double loadingProperty) throws IOException {
+        Utility.outputVerbose("In sendFileStream updates method");
+        transferStreamData(fis, os, totalFileSize, loadingProperty);
+    }
+
+    public boolean receiveFile(DataCarrier<FileContent> dc, @Nullable Double loadingProperty) {
         boolean success = false;
 
         if(dc.isRequest())
@@ -249,14 +268,10 @@ public class Server implements Runnable {
             File file = new File(folderPath, fileContent.getFileName());
             fos = new FileOutputStream(file);
 
-            int n;
-            long fileSize = fileContent.getFileSize();
-            byte[] buffer = new byte[1024 * 4];
-            while ( (fileSize > 0) && (IOUtils.EOF != (n = is.read(buffer, 0, (int)Math.min(buffer.length, fileSize)))) ) { //checks if fileSize is 0 or if EOF sent
-                fos.write(buffer, 0, n);
-                fileSize -= n;
-                //Utility.outputVerbose("fileSize: "+fileSize+"\nn: "+ n);
-            }
+            if(loadingProperty == null)
+                receiveFileStream(fileContent.getFileSize(), fos);
+            else
+                receiveFileStream(fileContent.getFileSize(), fos, loadingProperty);
 
             success = true;
         } catch (FileNotFoundException e) {
@@ -266,6 +281,9 @@ public class Server implements Runnable {
             e.printStackTrace();
             Utility.outputError("Error receiving file", e);
         } finally {
+            if(loadingProperty != null){
+                loadingProperty = (double) 0;
+            }
             if(fos == null){
                 success = false;
             }else{
@@ -293,6 +311,45 @@ public class Server implements Runnable {
         }
 
         return false;
+    }
+
+    private void receiveFileStream(final long totalFileSize, final FileOutputStream fos) throws IOException {
+        Utility.outputVerbose("In receiveFileStream no updates method");
+        transferStreamData(is, fos, totalFileSize);
+    }
+
+    private void receiveFileStream(final long totalFileSize, final FileOutputStream fos, Double loadingProperty) throws IOException {
+        Utility.outputVerbose("In receiveFileStream updates method");
+        transferStreamData(is, fos, totalFileSize, loadingProperty);
+    }
+
+    private void transferStreamData(InputStream input, OutputStream outPut, final long totalFileSize) throws IOException {
+        int n;
+        long fileSize = totalFileSize;
+        byte[] buffer = new byte[1024 * 4];
+        while ( (fileSize > 0) && (IOUtils.EOF != (n = input.read(buffer, 0, (int)Math.min(buffer.length, fileSize)))) ) { //checks if fileSize is 0 or if EOF sent
+            outPut.write(buffer, 0, n);
+            fileSize -= n;
+        }
+    }
+
+    private void transferStreamData(InputStream input, OutputStream outPut, final long totalFileSize, Double loadingProperty) throws IOException {
+        int n;
+        long fileSize = totalFileSize;
+        byte[] buffer = new byte[1024 * 4];
+        while ( (fileSize > 0) && (IOUtils.EOF != (n = input.read(buffer, 0, (int)Math.min(buffer.length, fileSize)))) ) { //checks if fileSize is 0 or if EOF sent
+            outPut.write(buffer, 0, n);
+            fileSize -= n;
+            updateProgressProperty(calculateFilePercentage(totalFileSize, fileSize), loadingProperty);
+        }
+    }
+
+    private double calculateFilePercentage(double totalFileSize, double currentFileSize){
+        return 1 - currentFileSize/totalFileSize;
+    }
+
+    private void updateProgressProperty(double value, double loadingProperty){
+        //update progress value
     }
 
     DataCarrier receiveObject() throws IOException, ClassNotFoundException {

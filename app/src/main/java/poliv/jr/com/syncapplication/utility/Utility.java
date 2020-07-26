@@ -9,8 +9,10 @@ import library.sharedpackage.communication.DataCarrier;
 
 public class Utility {
 
-    private static final String DEFAULT_ITEM_FOLDER_NAME = "Videos";
+    private static final String DEFAULT_ITEM_FOLDER_NAME = "Videos"+File.separator+"test";
     //private static final String DEFAULT_ITEM_FOLDER_NAME = "Videos";
+
+    //private static final String TEST_ITEM_FOLDER_NAME = "Videos";
 
     private static final String LOG_TAG = "SyncAppLogger";
 
