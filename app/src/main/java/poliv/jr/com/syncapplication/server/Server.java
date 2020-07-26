@@ -1,6 +1,7 @@
 package poliv.jr.com.syncapplication.server;
 
 import androidx.annotation.Nullable;
+import androidx.databinding.ObservableDouble;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -184,7 +185,7 @@ public class Server implements Runnable {
             notifyResponseSent(dc.getInfo().toString());
     }
 
-    public boolean sendFile(DataCarrier<FileContent> dc, @Nullable Double loadingProperty){ //todo: create these methods todo https://stackoverflow.com/questions/10367698/java-multiple-file-transfer-over-socket?answertab=votes#tab-top
+    public boolean sendFile(DataCarrier<FileContent> dc, @Nullable final ObservableDouble loadingProperty){ //todo: create these methods todo https://stackoverflow.com/questions/10367698/java-multiple-file-transfer-over-socket?answertab=votes#tab-top
         boolean success = false;
 
         if(dc.isRequest())
@@ -213,7 +214,7 @@ public class Server implements Runnable {
             Utility.outputError("Error sending file", e);
         } finally {
             if(loadingProperty != null){
-                loadingProperty = (double) 0;
+                loadingProperty.set(0);
             }
             if(fis == null){
                 success = false;
@@ -248,12 +249,12 @@ public class Server implements Runnable {
         transferStreamData(fis, os, totalFileSize);
     }
 
-    private void sendFileStream(final long totalFileSize, final FileInputStream fis, Double loadingProperty) throws IOException {
+    private void sendFileStream(final long totalFileSize, final FileInputStream fis, final ObservableDouble loadingProperty) throws IOException {
         Utility.outputVerbose("In sendFileStream updates method");
         transferStreamData(fis, os, totalFileSize, loadingProperty);
     }
 
-    public boolean receiveFile(DataCarrier<FileContent> dc, @Nullable Double loadingProperty) {
+    public boolean receiveFile(DataCarrier<FileContent> dc, @Nullable final ObservableDouble loadingProperty) {
         boolean success = false;
 
         if(dc.isRequest())
@@ -282,7 +283,7 @@ public class Server implements Runnable {
             Utility.outputError("Error receiving file", e);
         } finally {
             if(loadingProperty != null){
-                loadingProperty = (double) 0;
+                loadingProperty .set(0);
             }
             if(fos == null){
                 success = false;
@@ -318,7 +319,7 @@ public class Server implements Runnable {
         transferStreamData(is, fos, totalFileSize);
     }
 
-    private void receiveFileStream(final long totalFileSize, final FileOutputStream fos, Double loadingProperty) throws IOException {
+    private void receiveFileStream(final long totalFileSize, final FileOutputStream fos, final ObservableDouble loadingProperty) throws IOException {
         Utility.outputVerbose("In receiveFileStream updates method");
         transferStreamData(is, fos, totalFileSize, loadingProperty);
     }
@@ -333,7 +334,7 @@ public class Server implements Runnable {
         }
     }
 
-    private void transferStreamData(InputStream input, OutputStream outPut, final long totalFileSize, Double loadingProperty) throws IOException {
+    private void transferStreamData(InputStream input, OutputStream outPut, final long totalFileSize, final ObservableDouble loadingProperty) throws IOException {
         int n;
         long fileSize = totalFileSize;
         byte[] buffer = new byte[1024 * 4];
@@ -348,8 +349,8 @@ public class Server implements Runnable {
         return 1 - currentFileSize/totalFileSize;
     }
 
-    private void updateProgressProperty(double value, double loadingProperty){
-        //update progress value
+    private void updateProgressProperty(double value, final ObservableDouble loadingProperty){
+        loadingProperty.set(value);
     }
 
     DataCarrier receiveObject() throws IOException, ClassNotFoundException {
