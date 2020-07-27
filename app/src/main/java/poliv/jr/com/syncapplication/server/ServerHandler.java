@@ -175,14 +175,40 @@ public class ServerHandler implements Runnable, RequestHandlerInterface {
     }
 
     private void sendFiles(LinkedList<String> fileNames) {
-        boolean success = true;
-
         LinkedList<FileContent> files = (LinkedList<FileContent>) remoteManager.getItems(fileNames);
         DataCarrier<LinkedList<FileContent>> initialResponse = new DataCarrier<>(false, DC.GET_ITEMS, files);
         sendRequestUsingAsyncTask(initialResponse, false);
 
         Utility.outputVerbose("FileContents list sent, ready to send files");
 
+        boolean success = executeFileTransfer(files, true);
+
+        DataCarrier finishedResponse = new DataCarrier(true, DC.FINISHED_SENDING_FILES);
+        sendRequest(finishedResponse, false);
+
+        Utility.outputVerbose("Finished sending files: "+success);
+    }
+
+    private void receiveFiles(LinkedList<FileContent> files) {
+        DataCarrier initialResponse = new DataCarrier(false, DC.OK_TO_SEND_FILES);
+        sendRequestUsingAsyncTask(initialResponse, false);
+
+        Utility.outputVerbose("Ok to send files sent, prepared to receive files");
+
+        boolean success = executeFileTransfer(files, false);
+
+        Utility.outputVerbose("Finished receiving files: "+success);
+    }
+
+
+    private boolean executeFileTransfer(LinkedList<FileContent> files, boolean send){
+        if(send) return executeSendFileTransfer(files);
+
+        return executeReceiveFileTransfer(files);
+    }
+
+    private boolean executeSendFileTransfer(LinkedList<FileContent> files) {
+        boolean success = true;
         for(FileContent fileContent : files){
             Utility.outputVerbose("Attempting to send "+fileContent.getFileName());
             DataCarrier<FileContent> sendFile = new DataCarrier<>(false, DC.GET_ITEMS, fileContent);
@@ -191,22 +217,11 @@ public class ServerHandler implements Runnable, RequestHandlerInterface {
 
             success = currentSuccess && success;
         }
-
-        DataCarrier finishedResponse = new DataCarrier(true, DC.FINISHED_SENDING_FILES);
-        sendRequest(finishedResponse, false);
-
-        Utility.outputVerbose("Finished sending files: "+success);
-
+        return success;
     }
 
-    private void receiveFiles(LinkedList<FileContent> files) {
+    private boolean executeReceiveFileTransfer(LinkedList<FileContent> files) {
         boolean success = true;
-
-        DataCarrier initialResponse = new DataCarrier(false, DC.OK_TO_SEND_FILES);
-        sendRequestUsingAsyncTask(initialResponse, false);
-
-        Utility.outputVerbose("Ok to send files sent, prepared to receive files");
-
         for(FileContent fileContent : files){
             Utility.outputVerbose("Attempting to receive "+fileContent.getFileName());
             DataCarrier<FileContent> receiveFile = new DataCarrier<>(true, DC.ADD_ITEMS, fileContent);
@@ -215,8 +230,7 @@ public class ServerHandler implements Runnable, RequestHandlerInterface {
             Utility.outputVerbose("Receiving "+fileContent.getFileName()+": "+currentSuccess);
             success = currentSuccess && success;
         }
-
-        Utility.outputVerbose("Finished receiving files: "+success);
+        return success;
     }
 
     private void connectionSetup(DataCarrier carrier) {
