@@ -3,7 +3,6 @@ package poliv.jr.com.syncapplication.server;
 import androidx.annotation.Nullable;
 import androidx.databinding.ObservableDouble;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
 import java.io.File;
