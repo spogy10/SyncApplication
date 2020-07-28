@@ -17,6 +17,9 @@ public class ServerHandler implements Runnable, RequestHandlerInterface {
 
     private static final String CONNECTION_RESET_EXCEPTION_STRING = "java.net.SocketException: Connection reset";
     private static final String END_OF_FILE_EXCEPTION_STRING = "java.io.EOFException";
+    
+    private static final boolean REQUEST = DataCarrier.REQUEST;
+    private static final boolean RESPONSE = DataCarrier.RESPONSE;
 
     private Server server;
     private ItemManager remoteManager;
@@ -95,7 +98,7 @@ public class ServerHandler implements Runnable, RequestHandlerInterface {
 
     @Override
     public void stopServer() {
-        DataCarrier dc = new DataCarrier(true, DC.DISCONNECT);
+        DataCarrier dc = new DataCarrier(REQUEST, DC.DISCONNECT);
 
         sendRequestUsingAsyncTask(dc, false);
 
@@ -161,7 +164,7 @@ public class ServerHandler implements Runnable, RequestHandlerInterface {
 
         Boolean data = remoteManager.removeItems(fileNames);
 
-        DataCarrier<Boolean> response = new DataCarrier<>(false, DC.REMOVE_ITEMS, data);
+        DataCarrier<Boolean> response = new DataCarrier<>(RESPONSE, DC.REMOVE_ITEMS, data);
 
         sendRequestUsingAsyncTask(response, false);
     }
@@ -169,28 +172,28 @@ public class ServerHandler implements Runnable, RequestHandlerInterface {
     private void getItemList(DataCarrier carrier) {
         LinkedList<String> data = (LinkedList<String>) remoteManager.getItemsList();
 
-        DataCarrier response = new DataCarrier<>(false, DC.GET_ITEM_LIST, data);
+        DataCarrier response = new DataCarrier<>(RESPONSE, DC.GET_ITEM_LIST, data);
 
         sendRequestUsingAsyncTask(response, false);
     }
 
     private void sendFiles(LinkedList<String> fileNames) {
         LinkedList<FileContent> files = (LinkedList<FileContent>) remoteManager.getItems(fileNames);
-        DataCarrier<LinkedList<FileContent>> initialResponse = new DataCarrier<>(false, DC.GET_ITEMS, files);
+        DataCarrier<LinkedList<FileContent>> initialResponse = new DataCarrier<>(RESPONSE, DC.GET_ITEMS, files);
         sendRequestUsingAsyncTask(initialResponse, false);
 
         Utility.outputVerbose("FileContents list sent, ready to send files");
 
         boolean success = executeFileTransfer(files, true);
 
-        DataCarrier finishedResponse = new DataCarrier(true, DC.FINISHED_SENDING_FILES);
+        DataCarrier finishedResponse = new DataCarrier(REQUEST, DC.FINISHED_SENDING_FILES);
         sendRequest(finishedResponse, false);
 
         Utility.outputVerbose("Finished sending files: "+success);
     }
 
     private void receiveFiles(LinkedList<FileContent> files) {
-        DataCarrier initialResponse = new DataCarrier(false, DC.OK_TO_SEND_FILES);
+        DataCarrier initialResponse = new DataCarrier(RESPONSE, DC.OK_TO_SEND_FILES);
         sendRequestUsingAsyncTask(initialResponse, false);
 
         Utility.outputVerbose("Ok to send files sent, prepared to receive files");
@@ -211,7 +214,7 @@ public class ServerHandler implements Runnable, RequestHandlerInterface {
         boolean success = true;
         for(FileContent fileContent : files){
             Utility.outputVerbose("Attempting to send "+fileContent.getFileName());
-            DataCarrier<FileContent> sendFile = new DataCarrier<>(false, DC.GET_ITEMS, fileContent);
+            DataCarrier<FileContent> sendFile = new DataCarrier<>(RESPONSE, DC.GET_ITEMS, fileContent);
             boolean currentSuccess = server.sendFile(sendFile, null);
             Utility.outputVerbose("Sending "+fileContent.getFileName()+": "+currentSuccess);
 
@@ -224,7 +227,7 @@ public class ServerHandler implements Runnable, RequestHandlerInterface {
         boolean success = true;
         for(FileContent fileContent : files){
             Utility.outputVerbose("Attempting to receive "+fileContent.getFileName());
-            DataCarrier<FileContent> receiveFile = new DataCarrier<>(true, DC.ADD_ITEMS, fileContent);
+            DataCarrier<FileContent> receiveFile = new DataCarrier<>(REQUEST, DC.ADD_ITEMS, fileContent);
             boolean currentSuccess = server.receiveFile(receiveFile, null);
 
             Utility.outputVerbose("Receiving "+fileContent.getFileName()+": "+currentSuccess);
@@ -234,13 +237,13 @@ public class ServerHandler implements Runnable, RequestHandlerInterface {
     }
 
     private void connectionSetup(DataCarrier carrier) {
-        DataCarrier<Boolean> response = new DataCarrier<>(false, DC.CONNECTION_SETUP,true);
+        DataCarrier<Boolean> response = new DataCarrier<>(RESPONSE, DC.CONNECTION_SETUP,true);
 
         sendRequest(response, false);
     }
 
     public DataCarrier testConnection() {
-        DataCarrier request = new DataCarrier(true, DC.CONNECTION_SETUP);
+        DataCarrier request = new DataCarrier(REQUEST, DC.CONNECTION_SETUP);
 
         return sendRequest(request, true);
     }
@@ -255,10 +258,10 @@ public class ServerHandler implements Runnable, RequestHandlerInterface {
         if(server.isServerOff() || !server.areStreamsInitialized()){
             String header = request.isRequest()? "Request:" : "Response:";
             Utility.outputVerbose(header + " " + request.getInfo() + " failed to send because connection not setup");
-            return new DataCarrier(false, DC.CONNECTION_NOT_SETUP);
+            return new DataCarrier(RESPONSE, DC.CONNECTION_NOT_SETUP);
         }
 
-        DataCarrier response = new DataCarrier(false, DC.SERVER_CONNECTION_ERROR);
+        DataCarrier response = new DataCarrier(RESPONSE, DC.SERVER_CONNECTION_ERROR);
         try{
             server.sendObject(request);
 
@@ -274,7 +277,7 @@ public class ServerHandler implements Runnable, RequestHandlerInterface {
     }
 
     private DataCarrier sendRequestUsingAsyncTask(DataCarrier request, boolean responseRequired){
-        DataCarrier response = new DataCarrier(false, DC.GENERAL_ERROR);
+        DataCarrier response = new DataCarrier(RESPONSE, DC.GENERAL_ERROR);
         try {
             response = new RequestAsyncTask().execute(request, responseRequired).get();
         } catch (InterruptedException e) {

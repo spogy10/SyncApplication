@@ -7,8 +7,8 @@ public class DataCarrier <T extends Serializable> implements Serializable {
     private DC info;
     private T data;
     private boolean request;
-    private static final boolean REQUEST = true;
-    private static final boolean RESPONSE = false;
+    public static final boolean REQUEST = true;
+    public static final boolean RESPONSE = false;
 
     private DataCarrier(){
 
