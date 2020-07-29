@@ -1,6 +1,12 @@
 package poliv.jr.com.syncapplication.server;
 
+import android.app.PendingIntent;
+import android.app.Service;
+import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.IBinder;
+
+import androidx.annotation.Nullable;
 
 import java.io.IOException;
 import java.util.LinkedList;
@@ -13,9 +19,12 @@ import static library.sharedpackage.communication.DataCarrier.REQUEST;
 import static library.sharedpackage.communication.DataCarrier.RESPONSE;
 import library.sharedpackage.manager.ItemManager;
 import library.sharedpackage.models.FileContent;
+import poliv.jr.com.syncapplication.MainActivity;
+import poliv.jr.com.syncapplication.exceptions.FileManagerNotInitializedException;
+import poliv.jr.com.syncapplication.manager.FileManager;
 import poliv.jr.com.syncapplication.utility.Utility;
 
-public class ServerHandler implements Runnable, RequestHandlerInterface {
+public class ServerHandler extends Service implements StoppableService {
 
     private static final String CONNECTION_RESET_EXCEPTION_STRING = "java.net.SocketException: Connection reset";
     private static final String END_OF_FILE_EXCEPTION_STRING = "java.io.EOFException";
@@ -27,25 +36,44 @@ public class ServerHandler implements Runnable, RequestHandlerInterface {
     private AtomicBoolean stopServer = new AtomicBoolean(false);
     private DataCarrier tempResponseHolder;
 
-    private static ServerHandler ourInstance = null;
-
-    public static ServerHandler getInstance(ItemManager remoteManager){
-        ourInstance = new ServerHandler(remoteManager);
-
-        return ourInstance;
+    public ServerHandler() {
     }
 
-    public static ServerHandler getInstance(){
-        if(ourInstance == null || ourInstance.remoteManager == null)
-            return null;
+    //region Service Methods
 
-        return ourInstance;
-    }
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        //startForeGround();
+        /*Intent notificationIntent = new Intent(this, MainActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);*/
 
-    private ServerHandler(ItemManager remoteManager){
-        this.remoteManager = remoteManager;
+        try {
+            this.remoteManager = FileManager.getInstance();
+        } catch (FileManagerNotInitializedException e) {
+            Utility.outputError("File manager not initialized", e);
+            e.printStackTrace();
+            stopSelf();
+        }
         server = Server.getInstance(this);
+
+        return START_STICKY;
     }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Utility.outputVerbose("Destroying Service");
+        stopServer();
+    }
+
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
+
+
+    //endregion
 
 
 
@@ -83,6 +111,8 @@ public class ServerHandler implements Runnable, RequestHandlerInterface {
             server.endServer();
             if(!stopServer.get())
                 restartServer();
+            else
+                stopSelf();
         }
     }
 
@@ -90,13 +120,12 @@ public class ServerHandler implements Runnable, RequestHandlerInterface {
 
     //region SERVER MANAGEMENT
 
-    @Override
-    public void restartServer() {
+    private void restartServer() {
         server.restartServer();
     }
 
-    @Override
-    public void stopServer() {
+    private void stopServer() {
+        Utility.outputVerbose("Stopping Server");
         DataCarrier dc = new DataCarrier(REQUEST, DC.DISCONNECT);
 
         sendRequestUsingAsyncTask(dc, false);
@@ -104,6 +133,11 @@ public class ServerHandler implements Runnable, RequestHandlerInterface {
         stopServer.compareAndSet(false, true);
     }
     //endregion
+
+    @Override
+    public void stopService() {
+        stopSelf();
+    }
 
 
 
@@ -296,6 +330,7 @@ public class ServerHandler implements Runnable, RequestHandlerInterface {
         unreadResponse.compareAndSet(true, false);
         return tempResponseHolder;
     }
+
 
     private class RequestAsyncTask extends AsyncTask<Object, Void, DataCarrier> {
 

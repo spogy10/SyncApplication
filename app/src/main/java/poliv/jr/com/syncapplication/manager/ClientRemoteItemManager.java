@@ -1,9 +1,11 @@
 package poliv.jr.com.syncapplication.manager;
 
+import android.content.Context;
+
 import library.sharedpackage.manager.ItemManager;
 
 public interface ClientRemoteItemManager extends ItemManager {
-    void restartServer();
+    void restartServer(Context context);
 
-    void stopServer();
+    void stopServer(Context context);
 }

@@ -1,5 +1,8 @@
 package poliv.jr.com.syncapplication.manager;
 
+import android.content.Context;
+import android.content.Intent;
+
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -12,15 +15,12 @@ import java.util.List;
 
 import library.sharedpackage.models.FileContent;
 import poliv.jr.com.syncapplication.exceptions.FileManagerNotInitializedException;
-import poliv.jr.com.syncapplication.server.RequestHandlerInterface;
 import poliv.jr.com.syncapplication.server.ServerHandler;
 import poliv.jr.com.syncapplication.utility.Utility;
 
 public class FileManager implements ClientRemoteItemManager, FileFilter {
 
     private static File folder;
-
-    private RequestHandlerInterface requestHandlerInterface;
 
     private static final String[] FILE_EXTENSIONS = new String[]{"mp4", "mkv", "flv"};
 
@@ -29,7 +29,10 @@ public class FileManager implements ClientRemoteItemManager, FileFilter {
     private static FileManager instance;
 
     public static FileManager getInstance(String folderPath){
-        instance = new FileManager(folderPath);
+        if(instance == null)
+            instance = new FileManager(folderPath);
+        else
+            instance.setupFileManager(folderPath);
 
         return instance;
     }
@@ -42,13 +45,12 @@ public class FileManager implements ClientRemoteItemManager, FileFilter {
     }
 
     private FileManager(String folderPath){
-        folder = new File(folderPath);
         FILE_EXTENSIONS_LIST = new LinkedList<>(Arrays.asList(FILE_EXTENSIONS));
-        requestHandlerInterface = ServerHandler.getInstance(this);
+        setupFileManager(folderPath);
     }
 
-    public void setRequestSenderInterface(RequestHandlerInterface requestHandlerInterface) {
-        this.requestHandlerInterface = requestHandlerInterface;
+    private void setupFileManager(String folderPath){
+        folder = new File(folderPath);
     }
 
     @Override
@@ -146,14 +148,18 @@ public class FileManager implements ClientRemoteItemManager, FileFilter {
         return fileContent;
     }
 
-    @Override
-    public void restartServer() {
-        requestHandlerInterface.restartServer();
+    private Intent generateIntent(Context context){
+        return new Intent(context, ServerHandler.class);
     }
 
     @Override
-    public void stopServer() {
-        requestHandlerInterface.stopServer();
+    public void restartServer(Context context) {
+        context.startService(generateIntent(context));
+    }
+
+    @Override
+    public void stopServer(Context context) {
+        context.stopService(generateIntent(context));
     }
 
 

@@ -16,14 +16,14 @@ import poliv.jr.com.syncapplication.manager.ClientRemoteItemManager;
 import poliv.jr.com.syncapplication.manager.FileManager;
 import poliv.jr.com.syncapplication.utility.Utility;
 
-//todo: create notifications
+//todo: create notifications -----------------------------------this
 //todo: for foreground services that probably won't close connection on sleep https://developer.android.com/guide/components/services
 //todo: run server connection in foreground service
 
 
 public class MainActivity extends AppCompatActivity {
     private static final int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 5;
-    private static ClientRemoteItemManager fileManager;
+    private static ClientRemoteItemManager fileManager = FileManager.getInstance(Utility.getFolderPath());
 
     private EditText etIpAddress;
 
@@ -65,12 +65,12 @@ public class MainActivity extends AppCompatActivity {
 
     private void startServer(String host){
         Utility.setHost(host);
-        fileManager = FileManager.getInstance(Utility.getFolderPath());
+        fileManager.restartServer(this);
     }
 
     private void stopServer(){
         if(fileManager != null)
-            fileManager.stopServer();
+            fileManager.stopServer(this);
     }
 
     private void checkForWritePermission(){

@@ -27,30 +27,27 @@ public class Server implements Runnable {
     private Thread t;
 
 
-    private Runnable runnable;
+    private StoppableService stoppableService;
 
 
     private static Server ourInstance;
     private boolean serverOff = true;
 
-    static Server getInstance(Runnable runnable){
-        if(ourInstance != null)
-            ourInstance.endServer();
-
-        ourInstance = new Server(runnable);
-
-        return ourInstance;
-    }
-
-    static Server getInstance(){
-        if(ourInstance == null || ourInstance.runnable == null)
-            return null;
+    static Server getInstance(StoppableService stoppableService){
+        if(ourInstance == null)
+            ourInstance = new Server(stoppableService);
+        else
+            ourInstance.restartServer(stoppableService);
 
         return ourInstance;
     }
 
-    private Server(Runnable runnable) {
-        this.runnable = runnable;
+    private Server(StoppableService stoppableService) {
+        setupServer(stoppableService);
+    }
+
+    private void setupServer(StoppableService stoppableService){
+        this.stoppableService = stoppableService;
         setUpConnection();
     }
 
@@ -69,8 +66,8 @@ public class Server implements Runnable {
             connection = new Socket(Utility.getHOST(), Utility.getPORT());
             if(initStreams()){
                 Utility.outputVerbose("connection received");
-                if(runnable != null){
-                    runnable.run();
+                if(stoppableService != null){
+                    stoppableService.run();
                     return;
                 }
                 Utility.outputVerbose("Could not start ServerHandler Thread");
@@ -82,6 +79,7 @@ public class Server implements Runnable {
             e.printStackTrace();
             Utility.outputError("Error starting server", e);
         }
+        if(stoppableService != null) stoppableService.stopService();
     }
     //endregion
 
@@ -93,6 +91,12 @@ public class Server implements Runnable {
         Utility.outputVerbose("Restarting Server");
         endServer();
         setUpConnection();
+    }
+
+    private void restartServer(StoppableService stoppableService){
+        Utility.outputVerbose("Hard Restarting Server");
+        endServer();
+        setupServer(stoppableService);
     }
 
     boolean isServerOff(){
