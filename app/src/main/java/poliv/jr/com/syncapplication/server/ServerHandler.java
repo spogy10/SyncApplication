@@ -9,6 +9,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import library.sharedpackage.communication.DC;
 import library.sharedpackage.communication.DataCarrier;
+import static library.sharedpackage.communication.DataCarrier.REQUEST;
+import static library.sharedpackage.communication.DataCarrier.RESPONSE;
 import library.sharedpackage.manager.ItemManager;
 import library.sharedpackage.models.FileContent;
 import poliv.jr.com.syncapplication.utility.Utility;
@@ -17,9 +19,6 @@ public class ServerHandler implements Runnable, RequestHandlerInterface {
 
     private static final String CONNECTION_RESET_EXCEPTION_STRING = "java.net.SocketException: Connection reset";
     private static final String END_OF_FILE_EXCEPTION_STRING = "java.io.EOFException";
-    
-    private static final boolean REQUEST = DataCarrier.REQUEST;
-    private static final boolean RESPONSE = DataCarrier.RESPONSE;
 
     private Server server;
     private ItemManager remoteManager;
