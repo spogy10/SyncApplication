@@ -13,26 +13,26 @@ import poliv.jr.com.syncapplication.R;
 import poliv.jr.com.syncapplication.SyncApplication;
 
 public class ForeGroundNotificationService {
-    private final Service foreGroundSerive;
+    private final Service foreGroundService;
 
     private final int NOTIFICATION_ID = 1;
 
 
-    public ForeGroundNotificationService(Service notify){
-        this.foreGroundSerive = notify;
+    public ForeGroundNotificationService(Service service){
+        this.foreGroundService = service;
     }
 
     //region Setup Notification
 
     private Notification.Builder createNotificationBuilder(){
-        return new Notification.Builder(foreGroundSerive, SyncApplication.NOTIFICATION_CHANNEL_ID)
+        return new Notification.Builder(foreGroundService, SyncApplication.NOTIFICATION_CHANNEL_ID)
                 .setContentText("Sync App")
                 .setSmallIcon(R.drawable.ic_launcher_foreground);
     }
 
     private PendingIntent sentUpPendingIntent(){
-        Intent notificationIntent = new Intent(foreGroundSerive, MainActivity.class);
-        return PendingIntent.getActivity(foreGroundSerive, 0, notificationIntent, 0);
+        Intent notificationIntent = new Intent(foreGroundService, MainActivity.class);
+        return PendingIntent.getActivity(foreGroundService, 0, notificationIntent, 0);
     }
 
     private Notification.Builder buildDefaultNotification(Notification.Builder builder){
@@ -46,7 +46,7 @@ public class ForeGroundNotificationService {
     }
 
     private void updateNotification(Notification notification){
-        NotificationManager manager = foreGroundSerive.getSystemService(NotificationManager.class);
+        NotificationManager manager = foreGroundService.getSystemService(NotificationManager.class);
         manager.notify(NOTIFICATION_ID, notification);
     }
     private void buildAndUpdateNotification(Notification.Builder notificationBuilder){
@@ -68,7 +68,7 @@ public class ForeGroundNotificationService {
         Notification.Builder builder = createNotificationBuilder();
         builder = buildDefaultNotification(builder);
         Notification notification = buildNotification(builder);
-        foreGroundSerive.startForeground(NOTIFICATION_ID, notification);
+        foreGroundService.startForeground(NOTIFICATION_ID, notification);
     }
 
     public void defaultNotification(){
