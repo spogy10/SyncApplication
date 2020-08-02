@@ -19,9 +19,9 @@ import static library.sharedpackage.communication.DataCarrier.REQUEST;
 import static library.sharedpackage.communication.DataCarrier.RESPONSE;
 import library.sharedpackage.manager.ItemManager;
 import library.sharedpackage.models.FileContent;
-import poliv.jr.com.syncapplication.MainActivity;
 import poliv.jr.com.syncapplication.exceptions.FileManagerNotInitializedException;
 import poliv.jr.com.syncapplication.manager.FileManager;
+import poliv.jr.com.syncapplication.notification.ForeGroundNotificationService;
 import poliv.jr.com.syncapplication.utility.Utility;
 
 public class ServerHandler extends Service implements StoppableService {
@@ -31,6 +31,7 @@ public class ServerHandler extends Service implements StoppableService {
 
     private Server server;
     private ItemManager remoteManager;
+    private ForeGroundNotificationService notificationService;
 
     private AtomicBoolean unreadResponse = new AtomicBoolean(false);
     private AtomicBoolean stopServer = new AtomicBoolean(false);
@@ -43,9 +44,8 @@ public class ServerHandler extends Service implements StoppableService {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        //startForeGround();
-        /*Intent notificationIntent = new Intent(this, MainActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);*/
+        notificationService = new ForeGroundNotificationService(this);
+        notificationService.startForegroundServiceWithInitialNotification();
 
         try {
             this.remoteManager = FileManager.getInstance();
