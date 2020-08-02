@@ -10,7 +10,7 @@ import poliv.jr.com.syncapplication.MainActivity;
 import poliv.jr.com.syncapplication.R;
 import poliv.jr.com.syncapplication.SyncApplication;
 
-public class ForeGroundNotificationService {
+public class MyForegroundNotificationService implements ForegroundNotificationService {
     private final Service foreGroundService;
     private final int NOTIFICATION_ID = 1;
     private final int DEFAULT_MAX_PROGRESS = 100;
@@ -18,7 +18,7 @@ public class ForeGroundNotificationService {
     private int previousPercentage = -1;
 
 
-    public ForeGroundNotificationService(Service service){
+    public MyForegroundNotificationService(Service service){
         this.foreGroundService = service;
     }
 
@@ -67,12 +67,14 @@ public class ForeGroundNotificationService {
 
     //region Public Methods
 
+    @Override
     public void startForegroundServiceWithInitialNotification(){
         Notification.Builder builder = createNotificationBuilder();
         Notification notification = buildNotification(builder);
         foreGroundService.startForeground(NOTIFICATION_ID, notification);
     }
 
+    @Override
     public void defaultNotification(){
         resetProgressState();
         buildAndUpdateNotification(new NotificationBuilder() {
@@ -83,6 +85,7 @@ public class ForeGroundNotificationService {
         });
     }
 
+    @Override
     public void updateProgress(final String message, final double progress){
         final int progressPercentage = (int)(progress * DEFAULT_MAX_PROGRESS);
 

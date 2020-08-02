@@ -23,7 +23,8 @@ import library.sharedpackage.models.FileContent;
 import poliv.jr.com.syncapplication.R;
 import poliv.jr.com.syncapplication.exceptions.FileManagerNotInitializedException;
 import poliv.jr.com.syncapplication.manager.FileManager;
-import poliv.jr.com.syncapplication.notification.ForeGroundNotificationService;
+import poliv.jr.com.syncapplication.notification.ForegroundNotificationService;
+import poliv.jr.com.syncapplication.notification.MyForegroundNotificationService;
 import poliv.jr.com.syncapplication.utility.Utility;
 
 public class ServerHandler extends Service implements StoppableService {
@@ -33,7 +34,7 @@ public class ServerHandler extends Service implements StoppableService {
 
     private Server server;
     private ItemManager remoteManager;
-    private ForeGroundNotificationService notificationService;
+    private ForegroundNotificationService notificationService;
 
     private AtomicBoolean unreadResponse = new AtomicBoolean(false);
     private AtomicBoolean stopServer = new AtomicBoolean(false);
@@ -46,7 +47,7 @@ public class ServerHandler extends Service implements StoppableService {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        notificationService = new ForeGroundNotificationService(this);
+        notificationService = new MyForegroundNotificationService(this);
         notificationService.startForegroundServiceWithInitialNotification();
 
         try {
