@@ -26,7 +26,7 @@ public class ForeGroundNotificationService {
 
     private Notification.Builder createNotificationBuilder(){
         return new Notification.Builder(foreGroundService, SyncApplication.NOTIFICATION_CHANNEL_ID)
-                .setContentText(foreGroundService.getString(R.string.sync_server_default_notification_text));
+                .setContentTitle(foreGroundService.getString(R.string.sync_server_default_notification_text));
     }
 
     private PendingIntent sentUpPendingIntent(){
