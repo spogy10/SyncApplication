@@ -286,7 +286,7 @@ public class Server implements Runnable {
             Utility.outputError("Error receiving file", e);
         } finally {
             if(loadingProperty != null){
-                loadingProperty .set(0);
+                loadingProperty.set(0);
             }
             if(fos == null){
                 success = false;

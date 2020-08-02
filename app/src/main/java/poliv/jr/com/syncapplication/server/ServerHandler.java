@@ -1,12 +1,13 @@
 package poliv.jr.com.syncapplication.server;
 
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.IBinder;
 
 import androidx.annotation.Nullable;
+import androidx.databinding.Observable;
+import androidx.databinding.ObservableDouble;
 
 import java.io.IOException;
 import java.util.LinkedList;
@@ -19,6 +20,7 @@ import static library.sharedpackage.communication.DataCarrier.REQUEST;
 import static library.sharedpackage.communication.DataCarrier.RESPONSE;
 import library.sharedpackage.manager.ItemManager;
 import library.sharedpackage.models.FileContent;
+import poliv.jr.com.syncapplication.R;
 import poliv.jr.com.syncapplication.exceptions.FileManagerNotInitializedException;
 import poliv.jr.com.syncapplication.manager.FileManager;
 import poliv.jr.com.syncapplication.notification.ForeGroundNotificationService;
@@ -238,35 +240,89 @@ public class ServerHandler extends Service implements StoppableService {
 
 
     private boolean executeFileTransfer(LinkedList<FileContent> files, boolean send){
-        if(send) return executeSendFileTransfer(files);
+        boolean result;
+        if(send)
+            result = executeSendFileTransfer(files);
+        else
+            result =  executeReceiveFileTransfer(files);
 
-        return executeReceiveFileTransfer(files);
+        notificationService.defaultNotification();
+        return result;
     }
 
     private boolean executeSendFileTransfer(LinkedList<FileContent> files) {
         boolean success = true;
+        int count = 1;
+        final int total = files.size();
         for(FileContent fileContent : files){
             Utility.outputVerbose("Attempting to send "+fileContent.getFileName());
-            DataCarrier<FileContent> sendFile = new DataCarrier<>(RESPONSE, DC.GET_ITEMS, fileContent);
-            boolean currentSuccess = server.sendFile(sendFile, null);
-            Utility.outputVerbose("Sending "+fileContent.getFileName()+": "+currentSuccess);
+            final DataCarrier<FileContent> sendFile = new DataCarrier<>(RESPONSE, DC.GET_ITEMS, fileContent);
+            final String message = String.format(getString(R.string.file_transfer_send_message), fileContent.getFileName(), count, total);
 
+            boolean currentSuccess = trackTransferProgress(message, new NotificationProgressTracker() {
+                @Override
+                public boolean trackProgress(ObservableDouble progress) {
+                    return server.sendFile(sendFile, progress);
+                }
+            });
+
+            Utility.outputVerbose("Sending "+fileContent.getFileName()+": "+currentSuccess);
             success = currentSuccess && success;
+            count++;
         }
         return success;
     }
 
     private boolean executeReceiveFileTransfer(LinkedList<FileContent> files) {
         boolean success = true;
+        int count = 1;
+        final int total = files.size();
         for(FileContent fileContent : files){
             Utility.outputVerbose("Attempting to receive "+fileContent.getFileName());
-            DataCarrier<FileContent> receiveFile = new DataCarrier<>(REQUEST, DC.ADD_ITEMS, fileContent);
-            boolean currentSuccess = server.receiveFile(receiveFile, null);
+            final DataCarrier<FileContent> receiveFile = new DataCarrier<>(REQUEST, DC.ADD_ITEMS, fileContent);
+            final String message = String.format(getString(R.string.file_transfer_receive_message), fileContent.getFileName(), count, total);
+
+            boolean currentSuccess = trackTransferProgress(message, new NotificationProgressTracker() {
+                @Override
+                public boolean trackProgress(ObservableDouble progress) {
+                    return server.receiveFile(receiveFile, progress);
+                }
+            });
 
             Utility.outputVerbose("Receiving "+fileContent.getFileName()+": "+currentSuccess);
             success = currentSuccess && success;
+            count++;
         }
         return success;
+    }
+
+    private boolean trackTransferProgress(String transferMessage, NotificationProgressTracker tracker){
+        final ObservableDouble progress = new ObservableDouble(0);
+        final Observable.OnPropertyChangedCallback observableCallBack = createProgressUpdateCallBack(transferMessage);
+
+        progress.addOnPropertyChangedCallback(observableCallBack);
+        updateNotification(transferMessage, progress.get());
+
+        boolean success = tracker.trackProgress(progress);
+
+        progress.removeOnPropertyChangedCallback(observableCallBack);
+        updateNotification("", progress.get());
+
+        return success;
+    }
+
+    private Observable.OnPropertyChangedCallback createProgressUpdateCallBack(final String message) {
+        return new Observable.OnPropertyChangedCallback() {
+            @Override
+            public void onPropertyChanged(Observable sender, int propertyId) {
+                final ObservableDouble observableDouble = (ObservableDouble) sender;
+                updateNotification(message, observableDouble.get());
+            }
+        };
+    }
+
+    private void updateNotification(String message, double progress){
+        notificationService.updateProgress(message, progress);
     }
 
     private void connectionSetup(DataCarrier carrier) {
@@ -340,5 +396,13 @@ public class ServerHandler extends Service implements StoppableService {
             return sendRequest((DataCarrier) requests[0], (boolean) requests[1]);
         }
     }
+    //endregion
+
+    //region Helper Interface
+
+    private interface NotificationProgressTracker{
+        boolean trackProgress(ObservableDouble progress);
+    }
+
     //endregion
 }

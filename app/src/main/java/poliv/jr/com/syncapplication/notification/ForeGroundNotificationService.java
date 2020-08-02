@@ -6,16 +6,16 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 
-import androidx.databinding.ObservableDouble;
-
 import poliv.jr.com.syncapplication.MainActivity;
 import poliv.jr.com.syncapplication.R;
 import poliv.jr.com.syncapplication.SyncApplication;
 
 public class ForeGroundNotificationService {
     private final Service foreGroundService;
-
     private final int NOTIFICATION_ID = 1;
+    private final int DEFAULT_MAX_PROGRESS = 100;
+
+    private int previousPercentage = -1;
 
 
     public ForeGroundNotificationService(Service service){
@@ -26,8 +26,7 @@ public class ForeGroundNotificationService {
 
     private Notification.Builder createNotificationBuilder(){
         return new Notification.Builder(foreGroundService, SyncApplication.NOTIFICATION_CHANNEL_ID)
-                .setContentText("Sync App")
-                .setSmallIcon(R.drawable.ic_launcher_foreground);
+                .setContentText(foreGroundService.getString(R.string.sync_server_default_notification_text));
     }
 
     private PendingIntent sentUpPendingIntent(){
@@ -35,13 +34,9 @@ public class ForeGroundNotificationService {
         return PendingIntent.getActivity(foreGroundService, 0, notificationIntent, 0);
     }
 
-    private Notification.Builder buildDefaultNotification(Notification.Builder builder){
-        //todo: update build stuff with default stuff I guess
-        return builder;
-    }
-
     private Notification buildNotification(Notification.Builder notificationBuilder){
-        notificationBuilder.setContentIntent(sentUpPendingIntent());
+        notificationBuilder.setContentIntent(sentUpPendingIntent())
+                .setSmallIcon(R.drawable.ic_launcher_foreground);
         return notificationBuilder.build();
     }
 
@@ -62,47 +57,57 @@ public class ForeGroundNotificationService {
 
     //endregion
 
+    //region Miscellaneous Methods
 
+    private void resetProgressState(){
+        previousPercentage = -1;
+    }
+
+    //endregion
+
+    //region Public Methods
 
     public void startForegroundServiceWithInitialNotification(){
         Notification.Builder builder = createNotificationBuilder();
-        builder = buildDefaultNotification(builder);
         Notification notification = buildNotification(builder);
         foreGroundService.startForeground(NOTIFICATION_ID, notification);
     }
 
     public void defaultNotification(){
+        resetProgressState();
         buildAndUpdateNotification(new NotificationBuilder() {
             @Override
             public Notification.Builder setupNotificationConfiguration(Notification.Builder builder) {
-                return buildDefaultNotification(builder);
-            }
-        });
-    }
-
-    public void updateProgress(String message){
-        buildAndUpdateNotification(new NotificationBuilder() {
-            @Override
-            public Notification.Builder setupNotificationConfiguration(Notification.Builder builder) {
-                //todo: insert update progress config here
                 return builder;
             }
         });
     }
 
-    public void updateProgress(String message, ObservableDouble progress){
+    public void updateProgress(final String message, final double progress){
+        final int progressPercentage = (int)(progress * DEFAULT_MAX_PROGRESS);
+
+        if(progressPercentage == previousPercentage) return;
+
+        previousPercentage = progressPercentage;
+
         buildAndUpdateNotification(new NotificationBuilder() {
             @Override
             public Notification.Builder setupNotificationConfiguration(Notification.Builder builder) {
-                //todo: insert update progress config here
+                builder.setContentTitle(message)
+                        .setProgress(DEFAULT_MAX_PROGRESS, progressPercentage, false);
                 return builder;
             }
         });
     }
 
+    //endregion
 
+
+    //region Helper Interface
 
     private interface NotificationBuilder {
         Notification.Builder setupNotificationConfiguration(Notification.Builder builder);
     }
+
+    //endregion
 }
