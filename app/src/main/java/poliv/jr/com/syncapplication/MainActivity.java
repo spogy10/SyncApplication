@@ -16,10 +16,8 @@ import poliv.jr.com.syncapplication.manager.ClientRemoteItemManager;
 import poliv.jr.com.syncapplication.manager.FileManager;
 import poliv.jr.com.syncapplication.utility.Utility;
 
-//todo: create notifications -----------------------------------this
-//todo: for foreground services that probably won't close connection on sleep https://developer.android.com/guide/components/services
-//todo: run server connection in foreground service
-
+//todo: settings page
+//todo: hey google, sync stuff; hey google open sync and set ip address to 191919
 
 public class MainActivity extends AppCompatActivity {
     private static final int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 5;
